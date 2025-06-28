@@ -1,0 +1,17 @@
+{
+    "mcpServers": {
+      "testrail-connector": {
+        "command": "powershell",
+        "args": [
+          "-Command",
+          "cd 'c:\\location\\to\\your\\folder'; npx jiti src/mapper.ts"
+        ],
+        "env": {
+          "TESTRAIL_URL": "https://username.testrail.io",
+          "TESTRAIL_USER": "user@email.com",
+          "TESTRAIL_API_KEY": "apiKey"
+        }
+      }
+    }
+  }
+  
