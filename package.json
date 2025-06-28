@@ -1,6 +1,6 @@
 {
   "name": "testrail_mcp",
-  "version": "1.0.0",
+  "version": "0.3.0",
   "main": "dist/FastMCP.js",
   "scripts": {
     "build": "tsup",
@@ -16,9 +16,9 @@
     "SSE"
   ],
   "type": "module",
-  "author": "Frank Fiegel <frank@glama.ai>",
+  "author": "catScn",
   "license": "MIT",
-  "description": "A TypeScript framework for building MCP servers.",
+  "description": "MCP server for Testrail",
   "module": "dist/FastMCP.js",
   "types": "dist/FastMCP.d.ts",
   "dependencies": {
@@ -37,9 +37,8 @@
     "zod-to-json-schema": "^3.24.5"
   },
   "repository": {
-    "url": "git+https://github.com/punkpeye/fastmcp.git"
+    "url": "git+https://github.com/CatScan-crypt/testrail_mcp.git"
   },
-  "homepage": "https://glama.ai/mcp",
   "release": {
     "branches": [
       "main"
@@ -90,8 +89,5 @@
     "splitting": true,
     "sourcemap": true,
     "clean": true
-  },
-  "bugs": {
-    "url": "https://github.com/punkpeye/fastmcp/issues"
   }
 }
