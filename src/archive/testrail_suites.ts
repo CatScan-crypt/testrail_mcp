@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { FastMCP } from "./FastMCP.js";
+import { FastMCP } from "../FastMCP.js";
 
 const testrailEnvSchema = z.object({
   TESTRAIL_URL: z.string().url("A valid TestRail URL is required."),
@@ -9,23 +9,23 @@ const testrailEnvSchema = z.object({
 
 const env = testrailEnvSchema.parse(process.env);
 
-export function addTestRailProjectTools(server: FastMCP) {
-  // --- get_project ---
-  const GetProjectParams = z.object({
-    project_id: z.number().int().positive("The ID of the project"),
+export function addTestRailSuiteTools(server: FastMCP) {
+  // --- get_suite ---
+  const GetSuiteParams = z.object({
+    suite_id: z.number().int().positive("The ID of the test suite"),
   });
 
   server.addTool({
-    name: "get_project",
-    description: "Returns an existing project.",
-    parameters: GetProjectParams,
+    name: "get_suite",
+    description: "Returns an existing test suite.",
+    parameters: GetSuiteParams,
     annotations: {
       openWorldHint: true,
       readOnlyHint: true,
     },
     execute: async (args) => {
-      const { project_id } = args;
-      const url = `${env.TESTRAIL_URL}/index.php?/api/v2/get_project/${project_id}`;
+      const { suite_id } = args;
+      const url = `${env.TESTRAIL_URL}/index.php?/api/v2/get_suite/${suite_id}`;
       const authHeader = `Basic ${Buffer.from(
         `${env.TESTRAIL_USER}:${env.TESTRAIL_API_KEY}`
       ).toString("base64")}`;
@@ -47,45 +47,33 @@ export function addTestRailProjectTools(server: FastMCP) {
         return JSON.stringify(data, null, 2);
       } catch (error) {
         console.error(error);
-        return `Failed to fetch project ${project_id}. Error: ${error instanceof Error ? error.message : 'Unknown error'}`;
+        return `Failed to fetch suite ${suite_id}. Error: ${error instanceof Error ? error.message : 'Unknown error'}`;
       }
     },
   });
 
-  // --- get_projects ---
-  const GetProjectsParams = z.object({
-    is_completed: z.number().int().optional().describe("1 to return completed projects only. 0 to return active projects only"),
-    limit: z.number().int().positive().optional().describe("The number of projects the response should return"),
-    offset: z.number().int().nonnegative().optional().describe("Where to start counting the projects from"),
+  // --- get_suites ---
+  const GetSuitesParams = z.object({
+    project_id: z.number().int().positive("The ID of the project"),
   });
 
   server.addTool({
-    name: "get_projects",
-    description: "Returns the list of available projects.",
-    parameters: GetProjectsParams,
+    name: "get_suites",
+    description: "Returns a list of test suites for a project.",
+    parameters: GetSuitesParams,
     annotations: {
       openWorldHint: true,
       readOnlyHint: true,
     },
     execute: async (args) => {
-      let urlString = `${env.TESTRAIL_URL}/index.php?/api/v2/get_projects`;
-      const queryParams = [];
-      for (const [key, value] of Object.entries(args)) {
-        if (value !== undefined) {
-          queryParams.push(`${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`);
-        }
-      }
-
-      if (queryParams.length > 0) {
-        urlString += '&' + queryParams.join('&');
-      }
-
+      const { project_id } = args;
+      const url = `${env.TESTRAIL_URL}/index.php?/api/v2/get_suites/${project_id}`;
       const authHeader = `Basic ${Buffer.from(
         `${env.TESTRAIL_USER}:${env.TESTRAIL_API_KEY}`
       ).toString("base64")}`;
 
       try {
-        const response = await fetch(urlString, {
+        const response = await fetch(url, {
           headers: {
             "Content-Type": "application/json",
             Authorization: authHeader,
@@ -101,29 +89,29 @@ export function addTestRailProjectTools(server: FastMCP) {
         return JSON.stringify(data, null, 2);
       } catch (error) {
         console.error(error);
-        return `Failed to fetch projects. Error: ${error instanceof Error ? error.message : 'Unknown error'}`;
+        return `Failed to fetch suites for project ${project_id}. Error: ${error instanceof Error ? error.message : 'Unknown error'}`;
       }
     },
   });
 
-  // --- add_project ---
-  const AddProjectParams = z.object({
-    name: z.string().min(1, "The name of the project is required."),
-    announcement: z.string().optional().describe("The description/announcement of the project"),
-    show_announcement: z.boolean().optional().describe("True if the announcement should be displayed on the project’s overview page and false otherwise"),
-    suite_mode: z.number().int().min(1).max(3).optional().describe("The suite mode of the project (1 for single suite mode, 2 for single suite + baselines, 3 for multiple suites)"),
+  // --- add_suite ---
+  const AddSuiteParams = z.object({
+    project_id: z.number().int().positive("The ID of the project the test suite should be added to"),
+    name: z.string().min(1, "The name of the test suite is required."),
+    description: z.string().optional().describe("The description of the test suite"),
   });
 
   server.addTool({
-    name: "add_project",
-    description: "Creates a new project (admin status required).",
-    parameters: AddProjectParams,
+    name: "add_suite",
+    description: "Creates a new test suite.",
+    parameters: AddSuiteParams,
     annotations: {
       openWorldHint: true,
       readOnlyHint: false,
     },
     execute: async (args) => {
-      const url = `${env.TESTRAIL_URL}/index.php?/api/v2/add_project`;
+      const { project_id, ...suiteData } = args;
+      const url = `${env.TESTRAIL_URL}/index.php?/api/v2/add_suite/${project_id}`;
       const authHeader = `Basic ${Buffer.from(
         `${env.TESTRAIL_USER}:${env.TESTRAIL_API_KEY}`
       ).toString("base64")}`;
@@ -135,7 +123,7 @@ export function addTestRailProjectTools(server: FastMCP) {
             'Content-Type': 'application/json',
             'Authorization': authHeader,
           },
-          body: JSON.stringify(args)
+          body: JSON.stringify(suiteData)
         });
 
         if (!response.ok) {
@@ -147,32 +135,29 @@ export function addTestRailProjectTools(server: FastMCP) {
         return JSON.stringify(data, null, 2);
       } catch (error) {
         console.error(error);
-        return `Failed to add project. Error: ${error instanceof Error ? error.message : 'Unknown error'}`;
+        return `Failed to add suite to project ${project_id}. Error: ${error instanceof Error ? error.message : 'Unknown error'}`;
       }
     },
   });
 
-  // --- update_project ---
-  const UpdateProjectParams = z.object({
-    project_id: z.number().int().positive("The ID of the project"),
+  // --- update_suite ---
+  const UpdateSuiteParams = z.object({
+    suite_id: z.number().int().positive("The ID of the test suite"),
     name: z.string().optional(),
-    announcement: z.string().optional(),
-    show_announcement: z.boolean().optional(),
-    suite_mode: z.number().int().min(1).max(3).optional(),
-    is_completed: z.boolean().optional(),
+    description: z.string().optional(),
   });
 
   server.addTool({
-    name: "update_project",
-    description: "Updates an existing project (admin status required; partial updates are supported).",
-    parameters: UpdateProjectParams,
+    name: "update_suite",
+    description: "Updates an existing test suite.",
+    parameters: UpdateSuiteParams,
     annotations: {
       openWorldHint: true,
       readOnlyHint: false,
     },
     execute: async (args) => {
-      const { project_id, ...updateData } = args;
-      const url = `${env.TESTRAIL_URL}/index.php?/api/v2/update_project/${project_id}`;
+      const { suite_id, ...updateData } = args;
+      const url = `${env.TESTRAIL_URL}/index.php?/api/v2/update_suite/${suite_id}`;
       const authHeader = `Basic ${Buffer.from(
         `${env.TESTRAIL_USER}:${env.TESTRAIL_API_KEY}`
       ).toString("base64")}`;
@@ -196,27 +181,31 @@ export function addTestRailProjectTools(server: FastMCP) {
         return JSON.stringify(data, null, 2);
       } catch (error) {
         console.error(error);
-        return `Failed to update project ${project_id}. Error: ${error instanceof Error ? error.message : 'Unknown error'}`;
+        return `Failed to update suite ${suite_id}. Error: ${error instanceof Error ? error.message : 'Unknown error'}`;
       }
     },
   });
 
-  // --- delete_project ---
-  const DeleteProjectParams = z.object({
-    project_id: z.number().int().positive("The ID of the project"),
+  // --- delete_suite ---
+  const DeleteSuiteParams = z.object({
+    suite_id: z.number().int().positive("The ID of the test suite"),
+    soft: z.number().int().min(0).max(1).optional().describe("If soft=1, this will return data on the number of affected tests, cases, etc, without actually deleting the entity.")
   });
 
   server.addTool({
-    name: "delete_project",
-    description: "Deletes an existing project (admin status required). This action cannot be undone.",
-    parameters: DeleteProjectParams,
+    name: "delete_suite",
+    description: "Deletes an existing test suite.",
+    parameters: DeleteSuiteParams,
     annotations: {
       openWorldHint: true,
       readOnlyHint: false,
     },
     execute: async (args) => {
-      const { project_id } = args;
-      const url = `${env.TESTRAIL_URL}/index.php?/api/v2/delete_project/${project_id}`;
+      const { suite_id, soft } = args;
+      let url = `${env.TESTRAIL_URL}/index.php?/api/v2/delete_suite/${suite_id}`;
+      if(soft) {
+        url += `&soft=${soft}`
+      }
       const authHeader = `Basic ${Buffer.from(
         `${env.TESTRAIL_USER}:${env.TESTRAIL_API_KEY}`
       ).toString("base64")}`;
@@ -235,10 +224,10 @@ export function addTestRailProjectTools(server: FastMCP) {
           throw new Error(`TestRail API Error: ${response.status} ${response.statusText} - ${errorText}`);
         }
 
-        return `Successfully deleted project ${project_id}.`;
+        return `Successfully deleted suite ${suite_id}.`;
       } catch (error) {
         console.error(error);
-        return `Failed to delete project ${project_id}. Error: ${error instanceof Error ? error.message : 'Unknown error'}`;
+        return `Failed to delete suite ${suite_id}. Error: ${error instanceof Error ? error.message : 'Unknown error'}`;
       }
     },
   });

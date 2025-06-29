@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { FastMCP } from "./FastMCP.js";
+import { FastMCP } from "../FastMCP.js";
 
 const testrailEnvSchema = z.object({
   TESTRAIL_URL: z.string().url("A valid TestRail URL is required."),
