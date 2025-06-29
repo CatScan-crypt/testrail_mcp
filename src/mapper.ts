@@ -1,8 +1,9 @@
 import { FastMCP } from "./FastMCP.js";
 import { addTestRailTools } from "./testrail_cases.js";
 import { addTestRailProjectTools } from "./testrail_projects.js";
-import { addTestRailSuiteTools } from "./testrail_suites.js";
+// import { addTestRailSuiteTools } from "./testrail_suites.js";
 import { addTestRailSectionTools } from "./testrail_sections.js";
+import { addTestRailSuiteToolsComplex } from "./testrail_suites_complex.js";
 
 // 1. Create the server instance
 const server = new FastMCP({
@@ -13,9 +14,10 @@ const server = new FastMCP({
 // 2. Add the tools by calling the exported function
 addTestRailTools(server);
 addTestRailProjectTools(server);
-addTestRailSuiteTools(server);
+// addTestRailSuiteTools(server);
 addTestRailSectionTools(server);
 
+addTestRailSuiteToolsComplex(server)
 // 3. Start the server
 server.start({ transportType: "stdio" });
 
