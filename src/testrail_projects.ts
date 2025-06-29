@@ -54,7 +54,7 @@ export function addTestRailProjectTools(server: FastMCP) {
 
   // --- get_projects ---
   const GetProjectsParams = z.object({
-    is_completed: z.boolean().optional().describe("1 to return completed projects only. 0 to return active projects only"),
+    is_completed: z.number().int().optional().describe("1 to return completed projects only. 0 to return active projects only"),
     limit: z.number().int().positive().optional().describe("The number of projects the response should return"),
     offset: z.number().int().nonnegative().optional().describe("Where to start counting the projects from"),
   });
