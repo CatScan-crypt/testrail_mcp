@@ -9,6 +9,7 @@ on:
 jobs:
   super-lint:
     runs-on: ubuntu-latest
+
     steps:
       - name: 🛎 Checkout code
         uses: actions/checkout@v4
@@ -17,9 +18,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'pnpm'
 
-      - name: 📦 Install dependencies with pnpm
+      - name: 📦 Install dependencies
         run: |
           npm install -g pnpm
           pnpm install
@@ -28,8 +28,10 @@ jobs:
         uses: github/super-linter@v5
         env:
           VALIDATE_ALL_CODEBASE: true
-          DEFAULT_BRANCH: main
-          IGNORE_GITIGNORED_FILES: false
-          ESLINT_EXTENSIONS: .js,.ts
-          PRETTIER_EXTENSIONS: .js,.ts
           RUN_LOCAL: true
+          DEFAULT_BRANCH: main
+          ESLINT_EXTENSIONS: .ts,.js
+          PRETTIER_EXTENSIONS: .ts,.js
+        with:
+          entrypoint: /bin/bash
+          args: -c "npm install -g pnpm && super-linter"
