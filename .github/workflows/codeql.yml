@@ -1,4 +1,3 @@
-
 name: "CodeQL Advanced"
 
 on:
@@ -15,13 +14,8 @@ jobs:
 
     runs-on: ${{ (matrix.language == 'swift' && 'macos-latest') || 'ubuntu-latest' }}
     permissions:
-      # required for all workflows
       security-events: write
-
-      # required to fetch internal or private CodeQL packs
       packages: read
-
-      # only required for workflows in private repositories
       actions: read
       contents: read
 
@@ -31,16 +25,21 @@ jobs:
         include:
         - language: javascript-typescript
           build-mode: none
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-
+    # --- ENHANCED CODEQL INIT STEP ---
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v3
       with:
         languages: ${{ matrix.language }}
         build-mode: ${{ matrix.build-mode }}
+        queries: |
+          +security-and-quality
+          ./.github/codeql/custom-queries
+    # ---------------------------------
 
     - if: matrix.build-mode == 'manual'
       shell: bash
@@ -56,3 +55,10 @@ jobs:
       uses: github/codeql-action/analyze@v3
       with:
         category: "/language:${{matrix.language}}"
+
+    # --- SECRETS SCANNING STEP ---
+    - name: TruffleHog Secrets Scan
+      uses: trufflesecurity/trufflehog@main
+      with:
+        scanArguments: --json .
+    # -----------------------------
