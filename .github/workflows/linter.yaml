@@ -1,0 +1,35 @@
+name: Super-Linter 🧹
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  super-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🛎 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: 📦 Install dependencies with pnpm
+        run: |
+          npm install -g pnpm
+          pnpm install
+
+      - name: 🧹 Run Super-Linter
+        uses: github/super-linter@v5
+        env:
+          VALIDATE_ALL_CODEBASE: true
+          DEFAULT_BRANCH: main
+          IGNORE_GITIGNORED_FILES: false
+          ESLINT_EXTENSIONS: .js,.ts
+          PRETTIER_EXTENSIONS: .js,.ts
+          RUN_LOCAL: true
