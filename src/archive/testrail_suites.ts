@@ -204,7 +204,7 @@ export function addTestRailSuiteTools(server: FastMCP) {
       const { suite_id, soft } = args;
       let url = `${env.TESTRAIL_URL}/index.php?/api/v2/delete_suite/${suite_id}`;
       if(soft) {
-        url += `&soft=${soft}`
+        url += `&soft=${soft}`;
       }
       const authHeader = `Basic ${Buffer.from(
         `${env.TESTRAIL_USER}:${env.TESTRAIL_API_KEY}`
