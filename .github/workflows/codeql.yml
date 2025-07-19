@@ -38,7 +38,6 @@ jobs:
         build-mode: ${{ matrix.build-mode }}
         queries: |
           +security-and-quality
-          ./.github/codeql/custom-queries
     # ---------------------------------
 
     - if: matrix.build-mode == 'manual'
