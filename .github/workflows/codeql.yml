@@ -59,5 +59,6 @@ jobs:
     - name: TruffleHog Secrets Scan
       uses: trufflesecurity/trufflehog@main
       with:
-         extra_args: --json .
+        path: .
+        extra_args: --json
     # -----------------------------
