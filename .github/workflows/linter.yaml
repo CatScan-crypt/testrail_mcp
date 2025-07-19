@@ -32,6 +32,3 @@ jobs:
           DEFAULT_BRANCH: main
           ESLINT_EXTENSIONS: .ts,.js
           PRETTIER_EXTENSIONS: .ts,.js
-        with:
-          entrypoint: /bin/bash
-          args: -c "npm install -g pnpm && super-linter"
